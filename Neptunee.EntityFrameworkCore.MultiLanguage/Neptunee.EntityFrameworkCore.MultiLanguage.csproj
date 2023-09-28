@@ -6,6 +6,13 @@
         <Nullable>enable</Nullable>
         <LangVersion>default</LangVersion>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <Authors>HusseinnHM</Authors>
+        <PackageProjectUrl>https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage/blob/master/README.md</PackageProjectUrl>
+        <RepositoryUrl>https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage</RepositoryUrl>
+        <PackageTags>dotnet, csharp, web, api, multi-language, database, EFCore</PackageTags>
+        <Description>Working with multi-language database efficiently using EF Core.</Description>
+        <Version>1.0.0</Version>
     </PropertyGroup>
 
     <ItemGroup>
