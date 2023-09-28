@@ -60,7 +60,7 @@ public class SampleDbContext: DbContext
 ```csharp
 entity.Prop = new MultiLanguageProperty("pew pew"); // defulte language always :)
 entity.Prop.Upsert("fr", "péw péw");
-context.Update(country);
+context.Add(entity);
 await context.SaveChangesAsync();
 ```
 
