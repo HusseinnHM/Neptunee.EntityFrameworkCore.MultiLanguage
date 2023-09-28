@@ -20,8 +20,8 @@ Working with multi-language database efficiently using EF Core.
 ```
 For default language the key is always "" (empty string).
 
-***Read :***
-Using custom sql functions and call them from EF Core as static methods you can get The value in the language you want simply.
+***Read :*** 
+ Using custom sql functions and call them from EF Core as static methods you can get The value in the language you want simply.
 
 [More details about create custom sql functions](https://www.linkedin.com/posts/husseinnhm_how-to-create-custom-sql-functions-and-use-activity-7096897369614540800-5hyH)
 
@@ -56,7 +56,7 @@ public class SampleDbContext: DbContext
 ```
 ## Using
 
-##### ***Write :***
+***Write :***
 ```csharp
 entity.Prop = new MultiLanguageProperty("pew pew"); // defulte language always :)
 entity.Prop.Upsert("fr", "péw péw");
@@ -64,7 +64,7 @@ context.Update(country);
 await context.SaveChangesAsync();
 ```
 
-##### ***Read :***
+***Read :***
 ```csharp
 context.Entities
        .AsNoTracking()
@@ -76,7 +76,7 @@ context.Entities
            ContainsIn = e.Prop.ContainsIn(languageKey)
        });
 ```
-**SQL Query** 
+**SQL Query :** 
 ```sql
 -- @languageKey='fr'
 
