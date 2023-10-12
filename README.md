@@ -89,6 +89,6 @@ FROM "Entities" AS e;
 
 ## More
 - [How to create custom SQL functions and use it in EF Core](https://www.linkedin.com/posts/husseinnhm_how-to-create-custom-sql-functions-and-use-activity-7096897369614540800-5hyH)
-- [PostgreSQL scripts for the custom SQL functions](https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage/blob/master/Neptunee.EntityFrameworkCore.MultiLanguage/HostedServices/CreateMultiLanguageDbFunctions.cs#L89).
-- [Sql Server scripts for the custom SQL functions](https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage/blob/master/Neptunee.EntityFrameworkCore.MultiLanguage/HostedServices/CreateMultiLanguageDbFunctions.cs#L125).
+- [PostgreSQL scripts for the custom SQL functions](https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage/blob/master/Neptunee.EntityFrameworkCore.MultiLanguage/HostedServices/CreateMultiLanguageDbFunctions.cs#L68).
+- [Sql Server scripts for the custom SQL functions](https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage/blob/master/Neptunee.EntityFrameworkCore.MultiLanguage/HostedServices/CreateMultiLanguageDbFunctions.cs#L123).
 - [Sample](https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage/tree/master/Sample)

@@ -1,4 +1,3 @@
-using Microsoft.Extensions.Options;
 using Neptunee.EntityFrameworkCore.MultiLanguage.Types;
 using Sample.Options;
 

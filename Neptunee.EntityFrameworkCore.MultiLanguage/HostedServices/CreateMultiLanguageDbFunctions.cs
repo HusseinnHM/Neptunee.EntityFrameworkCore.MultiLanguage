@@ -1,8 +1,6 @@
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Neptunee.EntityFrameworkCore.MultiLanguage.Exceptions;
 using Neptunee.EntityFrameworkCore.MultiLanguage.Extensions;
 using Neptunee.EntityFrameworkCore.MultiLanguage.Types;
 
