@@ -1,4 +1,5 @@
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Neptunee.EntityFrameworkCore.MultiLanguage.Exceptions;
@@ -19,12 +20,28 @@ public class CreateMultiLanguageDbFunctions<TDbContext> : IHostedService where T
     public async Task StartAsync(CancellationToken cancellationToken)
     {
         using var serviceScope = _serviceProvider.CreateScope();
-        var context = serviceScope.ServiceProvider.GetRequiredService<TDbContext>();
-        await context.Database.ExecuteSqlRawAsync(CreateGetOrDefaultInCommand(context.Database.ProviderName!), cancellationToken: cancellationToken);
-        await context.Database.ExecuteSqlRawAsync(CreateGetInCommand(context.Database.ProviderName!), cancellationToken: cancellationToken);
-        await context.Database.ExecuteSqlRawAsync(CreateGetDefaultCommand(context.Database.ProviderName!), cancellationToken: cancellationToken);
-        await context.Database.ExecuteSqlRawAsync(CreateEfContainsValueInCommand(context.Database.ProviderName!),
-            cancellationToken: cancellationToken);
+        var database = serviceScope.ServiceProvider.GetRequiredService<TDbContext>().Database;
+
+        if (database.IsPostgreSqlProvider())
+        {
+            foreach (var script in PostgreSqlFunctionsScripts)
+            {
+                await database.ExecuteSqlRawAsync(script, cancellationToken);
+            }
+        }
+
+        else if (database.IsSqlServerProvider())
+        {
+            foreach (var script in DeleteSqlServerFunctionsIfExistsScripts())
+            {
+                await database.ExecuteSqlRawAsync(script, cancellationToken: cancellationToken);
+            }
+
+            foreach (var script in SqlServerFunctionsScripts)
+            {
+                await database.ExecuteSqlRawAsync(script, cancellationToken: cancellationToken);
+            }
+        }
     }
 
     public Task StopAsync(CancellationToken cancellationToken)
@@ -33,75 +50,119 @@ public class CreateMultiLanguageDbFunctions<TDbContext> : IHostedService where T
     }
 
 
-    private string CreateGetOrDefaultInCommand(string providerName)
+    private IEnumerable<string> DeleteSqlServerFunctionsIfExistsScripts()
     {
-        return string.Equals(providerName, ProviderNames.PostgreSql,
-            StringComparison.OrdinalIgnoreCase)
-            ? $@"
-                    CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrDefaultIn))}(PROP JSONB, LANGUAGEKEY TEXT)
-                     RETURNS TEXT
-                     LANGUAGE PLPGSQL
-                    AS $FUNCTION$
-                    BEGIN
-	                    IF (PROP ? LANGUAGEKEY) THEN
-		                    RETURN PROP ->> LANGUAGEKEY;
-	                    ELSE 
-		                    RETURN PROP ->> '';
-	                    END IF;
-                    END;
-                    $FUNCTION$
-                    ;"
-            : throw new ProviderNotSupportedException(providerName);
+        foreach (var functionName in new[]
+                 {
+            Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrDefaultIn)),
+            Helper.FunctionName(nameof(MultiLanguageFunctions.GetIn)),
+            Helper.FunctionName(nameof(MultiLanguageFunctions.GetDefault)),
+            Helper.FunctionName(nameof(MultiLanguageFunctions.ContainsIn)),
+                 })
+        {
+            yield return $"""
+               IF OBJECT_ID (N'{functionName}', N'FN') IS NOT NULL
+               DROP FUNCTION {functionName};
+             """;
+        }
     }
 
-    private string CreateGetInCommand(string providerName)
+    private static readonly string[] PostgreSqlFunctionsScripts =
     {
-        return string.Equals(providerName, ProviderNames.PostgreSql,
-            StringComparison.OrdinalIgnoreCase)
-            ? $@"
-                    CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageProperty.GetIn))}(PROP JSONB, LANGUAGEKEY TEXT)
-                     RETURNS TEXT
-                     LANGUAGE PLPGSQL
-                    AS $FUNCTION$
-                    BEGIN
-                        RETURN PROP ->> LANGUAGEKEY;
-                    END;
-                    $FUNCTION$
-                    ;"
-            : throw new ProviderNotSupportedException(providerName);
-    }
+        $"""
+            CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrDefaultIn))}(PROP JSONB, LANGUAGEKEY TEXT)
+             RETURNS TEXT
+             LANGUAGE PLPGSQL
+            AS $FUNCTION$
+            BEGIN
+                IF (PROP ? LANGUAGEKEY) THEN
+                    RETURN PROP ->> LANGUAGEKEY;
+                ELSE
+                    RETURN PROP ->> '';
+                END IF;
+            END;
+            $FUNCTION$
+            ;
+         """,
+        $"""
+         
+            CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageProperty.GetIn))}(PROP JSONB, LANGUAGEKEY TEXT)
+             RETURNS TEXT
+             LANGUAGE PLPGSQL
+            AS $FUNCTION$
+            BEGIN
+                RETURN PROP ->> LANGUAGEKEY;
+            END;
+            $FUNCTION$
+            ;
+         """,
+        $"""
+         
+            CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetDefault))}(PROP JSONB)
+             RETURNS TEXT
+             LANGUAGE PLPGSQL
+            AS $FUNCTION$
+            BEGIN
+                RETURN PROP ->> '';
+            END;
+            $FUNCTION$
+            ;
+         """,
+        $"""
+         
+            CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.ContainsIn))}(PROP JSONB, LANGUAGEKEY TEXT)
+             RETURNS BOOL
+             LANGUAGE PLPGSQL
+            AS $FUNCTION$
+            BEGIN
+            	RETURN PROP ? LANGUAGEKEY;
+            END;
+            $FUNCTION$
+            ;
+         """
+    };
 
-    private string CreateGetDefaultCommand(string providerName)
+    private static readonly string[] SqlServerFunctionsScripts =
     {
-        return string.Equals(providerName, ProviderNames.PostgreSql,
-            StringComparison.OrdinalIgnoreCase)
-            ? $@"
-                    CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetDefault))}(PROP JSONB)
-                     RETURNS TEXT
-                     LANGUAGE PLPGSQL
-                    AS $FUNCTION$
-                    BEGIN
-                        RETURN PROP ->> '';
-                    END;
-                    $FUNCTION$
-                    ;"
-            : throw new ProviderNotSupportedException(providerName);
-    }
-
-    private string CreateEfContainsValueInCommand(string providerName)
-    {
-        return string.Equals(providerName, ProviderNames.PostgreSql,
-            StringComparison.OrdinalIgnoreCase)
-            ? $@"
-                    CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.ContainsIn))}(PROP JSONB, LANGUAGEKEY TEXT)
-                     RETURNS BOOL
-                     LANGUAGE PLPGSQL
-                    AS $FUNCTION$
-                    BEGIN
-                    	RETURN PROP ? LANGUAGEKEY;
-                    END;
-                    $FUNCTION$
-                    ;"
-            : throw new ProviderNotSupportedException(providerName);
-    }
+        $"""
+            CREATE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrDefaultIn))}(@PROP NVARCHAR(MAX),@LANGUAGEKEY NVARCHAR(10))
+             RETURNS NVARCHAR(MAX)
+            AS
+            BEGIN
+              IF (@LANGUAGEKEY != '' AND JSON_PATH_EXISTS(@PROP,'$.'+@LANGUAGEKEY) > 0)
+                   RETURN JSON_VALUE(@PROP,'$.'+@LANGUAGEKEY);
+               ELSE
+                   RETURN JSON_VALUE(@PROP,'$.""');
+               RETURN '';
+            END;
+            ;
+         """,
+        $"""
+            CREATE FUNCTION {Helper.FunctionName(nameof(MultiLanguageProperty.GetIn))}(@PROP NVARCHAR(MAX),@LANGUAGEKEY NVARCHAR(10))
+             RETURNS NVARCHAR(MAX)
+            AS
+            BEGIN
+                RETURN JSON_VALUE(@PROP,'$.'+@LANGUAGEKEY);
+            END;
+            ;
+         """,
+        $"""
+            CREATE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetDefault))}(@PROP NVARCHAR(MAX))
+             RETURNS NVARCHAR(MAX)
+            AS
+            BEGIN
+                RETURN JSON_VALUE(@PROP,'$.""');
+            END;
+            ;
+         """,
+        $"""
+            CREATE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.ContainsIn))}(@PROP NVARCHAR(MAX), @LANGUAGEKEY NVARCHAR(10))
+             RETURNS BIT
+            AS
+            BEGIN
+            	RETURN JSON_PATH_EXISTS(@PROP,'$.'+@LANGUAGEKEY);
+            END;
+            ;
+         """
+    };
 }
