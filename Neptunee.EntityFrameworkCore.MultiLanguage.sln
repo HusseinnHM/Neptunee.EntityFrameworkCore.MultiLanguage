@@ -14,6 +14,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "SolutionItems", "SolutionIt
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.SqlServer", "Test.SqlServer\Test.SqlServer.csproj", "{E9B85AFF-DCE4-4255-B6C8-85ABAE7F14A2}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -36,5 +38,11 @@ Global
 		{33D05A47-5BDE-4704-AA58-07982F44B44F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{33D05A47-5BDE-4704-AA58-07982F44B44F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{33D05A47-5BDE-4704-AA58-07982F44B44F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E9B85AFF-DCE4-4255-B6C8-85ABAE7F14A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E9B85AFF-DCE4-4255-B6C8-85ABAE7F14A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E9B85AFF-DCE4-4255-B6C8-85ABAE7F14A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E9B85AFF-DCE4-4255-B6C8-85ABAE7F14A2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
 	EndGlobalSection
 EndGlobal
