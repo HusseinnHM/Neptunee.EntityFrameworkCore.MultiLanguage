@@ -1,38 +1,38 @@
+using System.Collections.ObjectModel;
 using System.Text.Json.Serialization;
+using Neptunee.EntityFrameworkCore.MultiLanguage.Converters;
 using Neptunee.EntityFrameworkCore.MultiLanguage.Exceptions;
 
 namespace Neptunee.EntityFrameworkCore.MultiLanguage.Types;
 
-public class MultiLanguageProperty : Dictionary<string, string>
+[JsonConverter(typeof(MultiLanguagePropertyJsonConverter))]
+public class MultiLanguageProperty : ReadOnlyDictionary<string, string>
 {
-    [JsonConstructor]
-    public MultiLanguageProperty() : base(StringComparer.OrdinalIgnoreCase)
+    internal MultiLanguageProperty(IDictionary<string, string> dictionary) : base(new Dictionary<string, string>(dictionary, StringComparer.OrdinalIgnoreCase))
     {
     }
 
-    public MultiLanguageProperty(string value) : this()
+    public MultiLanguageProperty(string value) : this(new Dictionary<string, string>())
     {
         Upsert(LanguageKey.Default, value);
     }
 
-
-    public new string this[string key] => base[key];
-
     public void Upsert(LanguageKey languageKey, string value)
     {
-        if (!base.TryAdd(languageKey, value))
+        if (!Dictionary.TryAdd(languageKey, value))
         {
-            base[languageKey] = value;
+            Dictionary[languageKey] = value;
         }
     }
 
     public void Modify(LanguageKey languageKey, string value)
     {
-        if (!TryModify(languageKey,value))
+        if (!TryModify(languageKey, value))
         {
             throw new KeyNotFoundException();
         }
     }
+
     public bool TryModify(LanguageKey languageKey, string value)
     {
         if (!ContainsIn(languageKey))
@@ -40,27 +40,20 @@ public class MultiLanguageProperty : Dictionary<string, string>
             return false;
         }
 
-        base[languageKey] = value;
+        Dictionary[languageKey] = value;
         return true;
     }
 
-    public new void Remove(string languageKey)
+    public void Remove(LanguageKey languageKey)
     {
         if (languageKey == LanguageKey.Default)
         {
             throw new CannotRemoveDefaultLanguageKeyException();
         }
 
-        base.Remove(languageKey);
+        Dictionary.Remove(languageKey);
     }
 
-    [Obsolete($"Use {nameof(Upsert)}", true)]
-    public new void Add(string languageKey, string value)
-    {
-    }
-
-    [Obsolete($"Use {nameof(Upsert)}", true)]
-    public new bool TryAdd(string languageKey, string value) => false;
 
     internal string GetIn(string languageKey)
         => this[languageKey];

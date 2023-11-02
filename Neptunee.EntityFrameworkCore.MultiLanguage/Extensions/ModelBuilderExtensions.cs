@@ -97,7 +97,7 @@ public static class ModelBuilderExtensions
             {
                 builder
                     .Entity(entityType.ClrType)
-                    .Property(propertyInfo.Name).HasConversion<MultiLanguagePropertyConverter>();
+                    .Property(propertyInfo.Name).HasConversion<MultiLanguagePropertyValueConverter>();
                 ;
             }
         }
