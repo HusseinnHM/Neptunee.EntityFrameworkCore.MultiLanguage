@@ -7,14 +7,21 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <GenerateDocumentationFile>true</GenerateDocumentationFile>
         <Authors>HusseinnHM</Authors>
-        <PackageProjectUrl>https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage/blob/master/README.md</PackageProjectUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageProjectUrl>https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage</PackageProjectUrl>
         <RepositoryUrl>https://github.com/HusseinnHM/Neptunee.EntityFrameworkCore.MultiLanguage</RepositoryUrl>
         <PackageTags>dotnet, csharp, web, api, multi-language, database, EFCore</PackageTags>
+        <PackageIcon>icon.png</PackageIcon>
         <Description>Working with multi-language database efficiently using EF Core.</Description>
-        <Version>1.0.1</Version>
-        <TargetFrameworks>net7.0;net6.0</TargetFrameworks>
+        <TargetFrameworks>net6.0;net7.0;</TargetFrameworks>
+        <Version>1.0.2</Version>
     </PropertyGroup>
 
+    <ItemGroup>
+        <None Include="..\icon.png" Pack="true" PackagePath="\"/>
+        <None Include="..\README.md" Pack="true" PackagePath="\"/>
+    </ItemGroup>
+    
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
     </ItemGroup>
