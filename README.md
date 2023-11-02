@@ -2,8 +2,12 @@
 
 ![](https://img.shields.io/nuget/dt/Neptunee.EntityFrameworkCore.MultiLanguage)
 [![](https://img.shields.io/nuget/v/Neptunee.EntityFrameworkCore.MultiLanguage)](https://www.nuget.org/packages/Neptunee.EntityFrameworkCore.MultiLanguage)
+![](https://img.shields.io/badge/Unit%20Test-16%20Passed-green)
 
 Working with multi-language database efficiently using EF Core.
+
+<p align="center">
+<img width="23%" src="icon.png"  alt="icon"/>
 
 ## Supports
 - PostgreSQL
