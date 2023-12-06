@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Neptunee.EntityFrameworkCore.MultiLanguage.Comparers;
 using Neptunee.EntityFrameworkCore.MultiLanguage.Converters;
 using Neptunee.EntityFrameworkCore.MultiLanguage.Exceptions;
 using Neptunee.EntityFrameworkCore.MultiLanguage.Types;
@@ -37,6 +38,7 @@ public static class ModelBuilderExtensions
                     .Entity(entityType.ClrType)
                     .Property(propertyInfo.Name)
                     .HasColumnType("jsonb");
+                builder.Entity(entityType.ClrType).Property(propertyInfo.Name).Metadata.SetValueComparer(new MultiLanguagePropertyComparer());
             }
         }
 
@@ -59,8 +61,8 @@ public static class ModelBuilderExtensions
     private static void ConfigureGetDefaultFuncPostgreSql(ModelBuilder builder)
     {
         var getByDbFunc = builder
-            .HasDbFunction(typeof(MultiLanguageFunctions).GetMethod(nameof(MultiLanguageFunctions.GetDefault))!)
-            .HasName(Helper.FunctionName(nameof(MultiLanguageFunctions.GetDefault)))
+            .HasDbFunction(typeof(MultiLanguageFunctions).GetMethod(nameof(MultiLanguageFunctions.GetFirst))!)
+            .HasName(Helper.FunctionName(nameof(MultiLanguageFunctions.GetFirst)))
             .IsBuiltIn(false);
         getByDbFunc.HasParameter("prop").HasStoreType("jsonb");
     }
@@ -68,8 +70,8 @@ public static class ModelBuilderExtensions
     private static void ConfigureGetOrDefaultInFuncPostgreSql(ModelBuilder builder)
     {
         var getByDbFunc = builder
-            .HasDbFunction(typeof(MultiLanguageFunctions).GetMethod(nameof(MultiLanguageFunctions.GetOrDefaultIn))!)
-            .HasName(Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrDefaultIn)))
+            .HasDbFunction(typeof(MultiLanguageFunctions).GetMethod(nameof(MultiLanguageFunctions.GetOrFirstIn))!)
+            .HasName(Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrFirstIn)))
             .IsBuiltIn(false);
         getByDbFunc.HasParameter("prop").HasStoreType("jsonb");
         getByDbFunc.HasParameter("languageKey").HasStoreType("text");
@@ -97,8 +99,7 @@ public static class ModelBuilderExtensions
             {
                 builder
                     .Entity(entityType.ClrType)
-                    .Property(propertyInfo.Name).HasConversion<MultiLanguagePropertyValueConverter>();
-                ;
+                    .Property(propertyInfo.Name).HasConversion<MultiLanguagePropertyValueConverter>(new MultiLanguagePropertyComparer());
             }
         }
 
@@ -121,8 +122,8 @@ public static class ModelBuilderExtensions
     private static void ConfigureGetDefaultFuncSqlServer(ModelBuilder builder)
     {
         var getByDbFunc = builder
-            .HasDbFunction(typeof(MultiLanguageFunctions).GetMethod(nameof(MultiLanguageFunctions.GetDefault))!)
-            .HasName(Helper.FunctionName(nameof(MultiLanguageFunctions.GetDefault)))
+            .HasDbFunction(typeof(MultiLanguageFunctions).GetMethod(nameof(MultiLanguageFunctions.GetFirst))!)
+            .HasName(Helper.FunctionName(nameof(MultiLanguageFunctions.GetFirst)))
             .IsBuiltIn(false);
         getByDbFunc.HasParameter("prop").HasStoreType("nvarchar(max)");
     }
@@ -130,8 +131,8 @@ public static class ModelBuilderExtensions
     private static void ConfigureGetOrDefaultInFuncSqlServer(ModelBuilder builder)
     {
         var getByDbFunc = builder
-            .HasDbFunction(typeof(MultiLanguageFunctions).GetMethod(nameof(MultiLanguageFunctions.GetOrDefaultIn))!)
-            .HasName(Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrDefaultIn)))
+            .HasDbFunction(typeof(MultiLanguageFunctions).GetMethod(nameof(MultiLanguageFunctions.GetOrFirstIn))!)
+            .HasName(Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrFirstIn)))
             .IsBuiltIn(false);
         getByDbFunc.HasParameter("prop").HasStoreType("nvarchar(max)");
         getByDbFunc.HasParameter("languageKey").HasStoreType("nvarchar(10)");

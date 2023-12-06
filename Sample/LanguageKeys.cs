@@ -1,11 +1,9 @@
-using Neptunee.EntityFrameworkCore.MultiLanguage.Types;
-
 public static class SmapleLanguages
 {
-    public static IEnumerable<LanguageKey> List => new[] { Ar, Fr };
+    public static IEnumerable<string> List => new[] { Ar, Fr };
 
-    public static readonly LanguageKey En = LanguageKey.Default;
-    public static readonly LanguageKey Ar = new(nameof(Ar));
-    public static readonly LanguageKey Fr = new(nameof(Fr));
+    public static readonly string En = nameof(En);
+    public static readonly string Ar = new(nameof(Ar));
+    public static readonly string Fr = new(nameof(Fr));
 
 }

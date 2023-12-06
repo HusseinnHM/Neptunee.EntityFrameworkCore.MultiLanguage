@@ -1,11 +1,9 @@
-using Neptunee.EntityFrameworkCore.MultiLanguage.Types;
-
 namespace Test.Shared;
 
 public static class TestLanguageKeys
 {
-    public static readonly LanguageKey En = LanguageKey.Default;
-    public static readonly LanguageKey Ar = new(nameof(Ar));
-    public static readonly LanguageKey Fr = new(nameof(Fr));
-    public static readonly LanguageKey UnKnown = new(nameof(UnKnown));
+    public static readonly string En = nameof(En).ToLower();
+    public static readonly string Ar = nameof(Ar).ToLower();
+    public static readonly string Fr = nameof(Fr).ToLower();
+    public static readonly string UnKnown = new(nameof(UnKnown));
 }

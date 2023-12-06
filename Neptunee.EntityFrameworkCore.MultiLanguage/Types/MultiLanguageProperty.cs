@@ -8,24 +8,31 @@ namespace Neptunee.EntityFrameworkCore.MultiLanguage.Types;
 [JsonConverter(typeof(MultiLanguagePropertyJsonConverter))]
 public class MultiLanguageProperty : ReadOnlyDictionary<string, string>
 {
-    internal MultiLanguageProperty(IDictionary<string, string> dictionary) : base(new Dictionary<string, string>(dictionary, StringComparer.OrdinalIgnoreCase))
+    public MultiLanguageProperty() : base(new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase))
     {
     }
 
-    public MultiLanguageProperty(string value) : this(new Dictionary<string, string>())
+    public MultiLanguageProperty(IDictionary<string, string> dictionary) : base(new Dictionary<string, string>(dictionary, StringComparer.OrdinalIgnoreCase))
     {
-        Upsert(LanguageKey.Default, value);
     }
 
-    public void Upsert(LanguageKey languageKey, string value)
+    public MultiLanguageProperty(string languageKey, string value) : this()
     {
+        Upsert(languageKey, value);
+    }
+    
+
+
+    public void Upsert(string languageKey, string value)
+    {
+        languageKey = languageKey.ToLower();
         if (!Dictionary.TryAdd(languageKey, value))
         {
             Dictionary[languageKey] = value;
         }
     }
 
-    public void Modify(LanguageKey languageKey, string value)
+    public void Modify(string languageKey, string value)
     {
         if (!TryModify(languageKey, value))
         {
@@ -33,8 +40,9 @@ public class MultiLanguageProperty : ReadOnlyDictionary<string, string>
         }
     }
 
-    public bool TryModify(LanguageKey languageKey, string value)
+    public bool TryModify(string languageKey, string value)
     {
+        languageKey = languageKey.ToLower();
         if (!ContainsIn(languageKey))
         {
             return false;
@@ -44,9 +52,9 @@ public class MultiLanguageProperty : ReadOnlyDictionary<string, string>
         return true;
     }
 
-    public void Remove(LanguageKey languageKey)
+    public void Remove(string languageKey)
     {
-        if (languageKey == LanguageKey.Default)
+        if (Dictionary.Count == 1)
         {
             throw new CannotRemoveDefaultLanguageKeyException();
         }
@@ -58,11 +66,11 @@ public class MultiLanguageProperty : ReadOnlyDictionary<string, string>
     internal string GetIn(string languageKey)
         => this[languageKey];
 
-    internal string GetDefault()
-        => this[LanguageKey.Default];
+    internal string GetFirst()
+        => Values.First();
 
-    internal string GetOrDefaultIn(string languageKey)
-        => TryGetValue(languageKey, out var value) ? value : GetDefault();
+    internal string GetOrFirst(string languageKey)
+        => TryGetValue(languageKey, out var value) ? value : GetFirst();
 
     internal bool ContainsIn(string languageKey)
         => ContainsKey(languageKey);

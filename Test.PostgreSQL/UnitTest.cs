@@ -21,7 +21,7 @@ public class UnitTest
         _defaultCountry = new Country
         {
             Id = new Guid("A1484E25-B03E-47AD-B9BF-95FD566940B3"),
-            Name = new MultiLanguageProperty("test default en")
+            Name = new MultiLanguageProperty("en","test default en")
         };
         _defaultCountry.Name.Upsert(TestLanguageKeys.Ar, "test ar");
         _defaultCountry.Name.Upsert(TestLanguageKeys.Fr, "test Fr");
@@ -36,7 +36,7 @@ public class UnitTest
         var country = new Country
         {
             Id = Guid.NewGuid(),
-            Name = new MultiLanguageProperty("test add in default")
+            Name = new MultiLanguageProperty(TestLanguageKeys.En,"test add in default")
         };
         country.Name.Upsert(TestLanguageKeys.Ar, "test add ar");
         country.Name.Upsert(TestLanguageKeys.Fr, "test add en");
@@ -51,15 +51,14 @@ public class UnitTest
     [InlineData(nameof(TestLanguageKeys.Ar))]
     [InlineData(nameof(TestLanguageKeys.Fr))]
     [InlineData(nameof(TestLanguageKeys.UnKnown))]
-    public async Task Get(string languageKeyStr)
+    public async Task Get(string languageKey)
     {
         await using var context = new TestDbContext();
-        var languageKey = LanguageKey.Pars(languageKeyStr);
         var query = context.Countries.AsNoTracking().Where(c => c.Id == _defaultCountry.Id).Select(c => new
         {
             c.Id,
             GetIn = c.Name.GetIn(languageKey),
-            GetOrDefaultIn = c.Name.GetOrDefaultIn(languageKey),
+            GetOrFirst = c.Name.GetOrFirstIn(languageKey),
             ContainsIn = c.Name.ContainsIn(languageKey)
         });
 
@@ -71,20 +70,18 @@ public class UnitTest
     [InlineData("")]
     [InlineData(nameof(TestLanguageKeys.Ar))]
     [InlineData(nameof(TestLanguageKeys.Fr))]
-    public async Task Modify(string languageKeyStr)
+    public async Task Modify(string languageKey)
     {
-        var languageKey = LanguageKey.Pars(languageKeyStr);
         await using var context = new TestDbContext();
         var country = await context.Countries.FindAsync(_defaultCountry.Id);
         var newValue = $"test {languageKey} modified at {DateTime.Now}";
 
         country!.Name.Upsert(languageKey, newValue);
-        context.Update(country);
         await context.SaveChangesAsync();
 
         var lastValue = context.Countries
             .Where(c => c.Id == country.Id)
-            .Select(c => c.Name.GetOrDefaultIn(languageKey))
+            .Select(c => c.Name.GetOrFirstIn(languageKey))
             .First();
         Assert.Equal(newValue, lastValue);
     }

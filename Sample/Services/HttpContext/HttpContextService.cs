@@ -1,4 +1,3 @@
-using Neptunee.EntityFrameworkCore.MultiLanguage.Types;
 using Sample.Options;
 
 namespace Sample.Services.HttpContext;
@@ -16,11 +15,11 @@ public class HttpContextService : IHttpContextService
         _languagesOptions = languagesOptions;
     }
 
-    public LanguageKey GetLanguageKey()
+    public string GetLanguageKey()
     {
-        var lang = _httpContextAccessor.HttpContext?.Request.Headers["language"].ToString() ?? string.Empty;
+        var languageKey = _httpContextAccessor.HttpContext?.Request.Headers["language"].ToString() ?? string.Empty;
 
-        return _languagesOptions.TryParsLanguageKey(lang, out var languageKey)
+        return _languagesOptions.Validate(languageKey)
             ? languageKey!
             : throw new Exception("Header with key language invalid");
     }

@@ -62,7 +62,7 @@ public class SampleDbContext: DbContext
 
 ***Write :***
 ```csharp
-entity.Prop = new MultiLanguageProperty("pew pew"); // defulte language always :)
+entity.Prop = new MultiLanguageProperty("defulte language","pew pew");
 entity.Prop.Upsert("fr", "péw péw");
 context.Add(entity);
 await context.SaveChangesAsync();
@@ -76,7 +76,7 @@ context.Entities
        {
            Id = e.Id,
            GetIn = e.Prop.GetIn(languageKey),
-           GetOrDefaultIn = e.Prop.GetOrDefaultIn(languageKey),
+           GetOrFirstIn = e.Prop.GetOrFirst(languageKey),
            ContainsIn = e.Prop.ContainsIn(languageKey)
        });
 ```
@@ -86,7 +86,7 @@ context.Entities
 
 SELECT e."Id",
     MultiLanGetIn(e."Name", @languageKey) AS "GetIn",
-    MultilanGetOrDefaultIn(e."Name", @languageKey) AS "GetOrDefaultIn",
+    MultilanGetOrFirstIn(e."Name", @languageKey) AS "GetOrFirst",
     MultilanContainsIn(e."Name", @languageKey) AS "ContainsIn"
 FROM "Entities" AS e;
 ```

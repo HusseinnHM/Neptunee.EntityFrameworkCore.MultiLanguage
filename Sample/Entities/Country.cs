@@ -10,7 +10,7 @@ public class Country
     }
     public Country(string name)
     {
-        Name = new (name);
+        Name = new ("en",name);
     }
 
     public Guid Id { get; set; }

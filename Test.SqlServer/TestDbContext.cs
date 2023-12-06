@@ -9,7 +9,7 @@ public class TestDbContext : TestSharedDbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
-        optionsBuilder.UseSqlServer("Server=127.0.0.1\\sql,1433;Database=TestMultiLanguage;User ID=sa;Password=Passw0rd;TrustServerCertificate=True");
+        optionsBuilder.UseSqlServer("Server=.;Database=TestMultiLanguage;TrustServerCertificate=True;Trusted_Connection=True;MultipleActiveResultSets=True;Integrated Security=true");
         base.OnConfiguring(optionsBuilder);
     }
 }

@@ -10,7 +10,7 @@ public class TranslateService : ITranslateService
     {
         foreach (var property in properties)
         {
-            var defaultValue = property.GetDefault();
+            var defaultValue = property.GetFirst();
             foreach (var languageKey in SmapleLanguages.List)
             {
                 property.Upsert(languageKey, defaultValue + " " + languageKey);

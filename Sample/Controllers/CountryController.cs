@@ -31,7 +31,7 @@ public class CountryController : ControllerBase
         return Ok(await _context.Countries.Select(c => new
         {
             c.Id,
-            Name = c.Name.GetOrDefaultIn(languageKey),
+            Name = c.Name.GetOrFirstIn(languageKey),
         }).ToListAsync());
     }
 
@@ -45,7 +45,7 @@ public class CountryController : ControllerBase
         return Ok(new
         {
             country.Id,
-            Name = country.Name.GetDefault(),
+            Name = country.Name.GetFirst(),
         });
     }
 
@@ -60,7 +60,7 @@ public class CountryController : ControllerBase
         return Ok(new
         {
             country.Id,
-            Name = country.Name.GetOrDefaultIn(languageKey),
+            Name = country.Name.GetOrFirstIn(languageKey),
         });
     }
 }

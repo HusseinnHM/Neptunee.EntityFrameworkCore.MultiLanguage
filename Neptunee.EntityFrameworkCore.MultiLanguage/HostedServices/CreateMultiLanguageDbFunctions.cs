@@ -52,9 +52,9 @@ public class CreateMultiLanguageDbFunctions<TDbContext> : IHostedService where T
     {
         foreach (var functionName in new[]
                  {
-            Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrDefaultIn)),
+            Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrFirstIn)),
             Helper.FunctionName(nameof(MultiLanguageFunctions.GetIn)),
-            Helper.FunctionName(nameof(MultiLanguageFunctions.GetDefault)),
+            Helper.FunctionName(nameof(MultiLanguageFunctions.GetFirst)),
             Helper.FunctionName(nameof(MultiLanguageFunctions.ContainsIn)),
                  })
         {
@@ -68,15 +68,16 @@ public class CreateMultiLanguageDbFunctions<TDbContext> : IHostedService where T
     private static readonly string[] PostgreSqlFunctionsScripts =
     {
         $"""
-            CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrDefaultIn))}(PROP JSONB, LANGUAGEKEY TEXT)
+            CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrFirstIn))}(PROP JSONB, LANGUAGEKEY TEXT)
              RETURNS TEXT
              LANGUAGE PLPGSQL
             AS $FUNCTION$
             BEGIN
+                LANGUAGEKEY = LOWER(LANGUAGEKEY);
                 IF (PROP ? LANGUAGEKEY) THEN
                     RETURN PROP ->> LANGUAGEKEY;
                 ELSE
-                    RETURN PROP ->> '';
+                    RETURN value FROM jsonb_each_text(PROP) LIMIT 1;
                 END IF;
             END;
             $FUNCTION$
@@ -89,19 +90,19 @@ public class CreateMultiLanguageDbFunctions<TDbContext> : IHostedService where T
              LANGUAGE PLPGSQL
             AS $FUNCTION$
             BEGIN
-                RETURN PROP ->> LANGUAGEKEY;
+                RETURN PROP ->> LOWER(LANGUAGEKEY);
             END;
             $FUNCTION$
             ;
          """,
         $"""
          
-            CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetDefault))}(PROP JSONB)
+            CREATE OR REPLACE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetFirst))}(PROP JSONB)
              RETURNS TEXT
              LANGUAGE PLPGSQL
             AS $FUNCTION$
             BEGIN
-                RETURN PROP ->> '';
+                RETURN value FROM jsonb_each_text(PROP) LIMIT 1;
             END;
             $FUNCTION$
             ;
@@ -113,7 +114,7 @@ public class CreateMultiLanguageDbFunctions<TDbContext> : IHostedService where T
              LANGUAGE PLPGSQL
             AS $FUNCTION$
             BEGIN
-            	RETURN PROP ? LANGUAGEKEY;
+            	RETURN PROP ? LOWER(LANGUAGEKEY);
             END;
             $FUNCTION$
             ;
@@ -123,15 +124,15 @@ public class CreateMultiLanguageDbFunctions<TDbContext> : IHostedService where T
     private static readonly string[] SqlServerFunctionsScripts =
     {
         $"""
-            CREATE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrDefaultIn))}(@PROP NVARCHAR(MAX),@LANGUAGEKEY NVARCHAR(10))
+            CREATE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetOrFirstIn))}(@PROP NVARCHAR(MAX),@LANGUAGEKEY NVARCHAR(10))
              RETURNS NVARCHAR(MAX)
             AS
             BEGIN
-              IF (@LANGUAGEKEY != '' AND JSON_PATH_EXISTS(@PROP,'$.'+@LANGUAGEKEY) > 0)
-                   RETURN JSON_VALUE(@PROP,'$.'+@LANGUAGEKEY);
-               ELSE
-                   RETURN JSON_VALUE(@PROP,'$.""');
-               RETURN '';
+              DECLARE @Result AS NVARCHAR(MAX);
+              SET @Result = (SELECT value FROM OPENJSON(@PROP) WHERE [key] = LOWER(@LANGUAGEKEY));
+                   IF (@Result is null)
+              SET @Result = (SELECT TOP 1 value FROM OPENJSON(@PROP));
+              RETURN @Result;
             END;
             ;
          """,
@@ -140,16 +141,20 @@ public class CreateMultiLanguageDbFunctions<TDbContext> : IHostedService where T
              RETURNS NVARCHAR(MAX)
             AS
             BEGIN
-                RETURN JSON_VALUE(@PROP,'$.'+@LANGUAGEKEY);
+                DECLARE @Result AS NVARCHAR(MAX);
+                SET @Result = (SELECT value FROM OPENJSON(@PROP) WHERE [key] = LOWER(@LANGUAGEKEY));
+                RETURN @Result;
             END;
             ;
          """,
         $"""
-            CREATE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetDefault))}(@PROP NVARCHAR(MAX))
+            CREATE FUNCTION {Helper.FunctionName(nameof(MultiLanguageFunctions.GetFirst))}(@PROP NVARCHAR(MAX))
              RETURNS NVARCHAR(MAX)
             AS
             BEGIN
-                RETURN JSON_VALUE(@PROP,'$.""');
+                DECLARE @Result AS NVARCHAR(MAX);
+                SET @Result = (SELECT TOP 1 value FROM OPENJSON(@PROP));
+                RETURN @Result;
             END;
             ;
          """,
@@ -158,7 +163,14 @@ public class CreateMultiLanguageDbFunctions<TDbContext> : IHostedService where T
              RETURNS BIT
             AS
             BEGIN
-            	RETURN JSON_PATH_EXISTS(@PROP,'$.'+@LANGUAGEKEY);
+            	DECLARE @Result AS BIT;
+                  IF (EXISTS(SELECT *
+                      FROM OPENJSON(@PROP)
+                      WHERE [key] = @LANGUAGEKEY))
+                      SET @Result = 1;
+                  ELSE
+                      SET @Result = 0;
+                  RETURN @Result;
             END;
             ;
          """

@@ -1,5 +1,3 @@
-using Neptunee.EntityFrameworkCore.MultiLanguage.Types;
-
 namespace Sample.Options;
 
 public class LanguagesOptions
@@ -26,24 +24,10 @@ public class LanguagesOptions
         return this;
     }
 
-    public bool TryParsLanguageKey(string language, out LanguageKey? languageKey)
+    public bool Validate(string language)
     {
-        if (Validate(language))
-        {
-            languageKey = language == string.Empty || language.Equals(Default, StringComparison.OrdinalIgnoreCase)
-                ? LanguageKey.Default
-                : LanguageKey.Pars(language);
-            return true;
-        }
-
-        languageKey = null;
-        return false;
-    }
-
-    private bool Validate(string language)
-    {
-        return language == string.Empty ||
-               Default.Equals(language, StringComparison.OrdinalIgnoreCase) ||
-               Other.Contains(language, StringComparer.OrdinalIgnoreCase);
+        return
+            Default.Equals(language, StringComparison.OrdinalIgnoreCase) ||
+            Other.Contains(language, StringComparer.OrdinalIgnoreCase);
     }
 }
